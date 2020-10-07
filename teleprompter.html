@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>One sentence at a time</title>
+    <link rel="stylesheet" type="text/css" href="https://unli.xyz/awsm_theme_pearl-lusta.css" media="all">
+    <script src="https://cdn.jsdelivr.net/gh/ryangjchandler/spruce@1.1.1/dist/spruce.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.7.0/dist/alpine.min.js"></script>
+</head>
+
+<body>
+    <div x-data="{index: 0, edit: true}" x-subscribe style="">
+
+        <button x-on:click="edit = !edit" x-text="edit? 'Hide essay' : 'Show essay'"></button>
+
+        <textarea x-model="$store.settings.t" id="editor" placeholder="Paste your essay here" x-show="edit"
+            style="height: 28%; min-height: 20rem; display: flex; flex-direction: column; white-space: pre; overflow-wrap: normal; overflow-x: scroll;"></textarea>
+
+        <div x-on:click="if ($store.settings.t.split(/\.\s|\.\n/).length > index) index++"
+            x-html="$store.settings.t.split(/\.\s|\.\n/).length > index ? $store.settings.t.split(/\.\s|\.\n/)[index] + '.' : 'The End'"
+            style="margin:auto; height: 80vh;display: grid;place-items: center; font-weight: 600; font-size: xx-large;">
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <button x-on:click="if (index > 0) index--">Back</button>
+            <button x-on:click="if ($store.settings.t.split(/\.\s|\.\n/).length > index) index++">Next</button>
+        </div>
+    </div>
+
+
+
+
+
+
+    <script>
+
+        const setQueryStringParameter = (name, value) => {
+            const params = new URLSearchParams(window.location.search)
+            params.set(name, value)
+
+            const url = decodeURIComponent(`${window.location.pathname}?${params}`)
+            window.history.replaceState({}, '', url)
+
+            return url
+        }
+
+        let defaultSettings = {
+            t: ``
+        }
+
+        Spruce.store('settings', {})
+
+
+
+
+
+        // get settings
+        if (typeof gotSettingsFromURL === 'undefined') {
+            window.gotSettingsFromURL = true;
+
+            var urlParams = new URLSearchParams(window.location.search)
+
+            let settingsFromURL = {}
+            Object.keys(defaultSettings).forEach((key, index) => {
+                if (urlParams.has(key)) {
+                    var settingsParam = JSON.parse(urlParams.get(key))
+
+                    if (settingsParam != null) {
+                        Object.assign(settingsFromURL, { [key]: settingsParam })
+                    }
+
+                } else {
+                    Object.assign(settingsFromURL, { [key]: defaultSettings[key] })
+                }
+            })
+            Spruce.reset('settings', settingsFromURL)
+        }
+
+
+
+
+
+        // save settings
+        Object.keys(defaultSettings).forEach((key, index) => {
+            Spruce.watch(`settings.${key}`, (next) => {
+                setQueryStringParameter(key, encodeURIComponent(JSON.stringify(next)))
+            })
+        })
+
+
+
+
+
+    </script>
+
+
+
+</body>
+
+</html>
